@@ -351,13 +351,13 @@ if ($is_editor) {
 
 		if (count($hashTags) > 0)
 		{
-			$target_country = "'countries':[";
+			//$target_country = "'countries':[";
 			foreach ($hashTags[0] as $hashtag)
 			{
 				$target_country .= "'" . ltrim($hashtag, '#') . "',";
 			}	
 			$target_country = substr($target_country, 0, -1);
-			$target_country .= "]";
+			//$target_country .= "]";
 		}
 		else
 		{
@@ -368,7 +368,7 @@ if ($is_editor) {
 
 		$url = 'https://graph.facebook.com/v2.1/695730993849543/feed?access_token=CAANapFfgn3QBAA1reXj15nCo4RgZB3cEViKnXe0i0dTDnjhirBYYjVTv46sPL6sVosAR1L832I5wvlc3ObX4JCaZA8hubsW1qgEz0sS1bpuuDQKLZCAmMEY8guSz0BiNqQwEbpiSauM0wqwtW299p8BBzJUkTVtPMaJJNSCct3baXAwY1gy';
 		$fields = array('link' => $myUrlLink,
-						'targeting' => $target_country,
+						'countries' => $target_country,
 						'message' => urlencode(strip_tags($_POST['newContent'])));
 		//url-ify the data for the POST
 		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }

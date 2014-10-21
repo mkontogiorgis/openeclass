@@ -549,6 +549,12 @@ function submit_work($id, $on_behalf_of = null) {
 			$result['run_status']['output'] = trim($result['run_status']['output']);
 			// Add the output as a comment
 			submit_grade_comments($id, $sid, 10, 'Output: '.$result['run_status']['output'], false);
+			
+//			print_r($result);
+//the following is the printout of previous command
+/*			Array ( [errors] => Array ( ) [code_id] => 5817adG [web_link] => http://code.hackerearth.com/5817adG [compile_status] => OK [id] => 0cb5ddZ [async] => 0 [message] => OK [run_status] => Array ( [status] => AC [time_limit] => 5 [output_html] => Hello, World!
+			[memory_limit] => 262144 [time_used] => 0.1005 [signal] => OTHER [status_detail] => N/A [output] => Hello, World! [async] => 0 [memory_used] => 64 ) ) 
+*/			
 			// End Auto-judge        
 		}
         

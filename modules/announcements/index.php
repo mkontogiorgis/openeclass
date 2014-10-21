@@ -345,8 +345,8 @@ if ($is_editor) {
         
     
 		// Facebook API call
-		$myUrlLink = urlencode('http://localhost/openeclass/modules/announcements/index.php?course=' . $course_code . '&an_id=' . $id);
-		
+		$myUrlLink = urlencode($_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'].'?course=' . $course_code . '&an_id=' . $id);
+		//$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF'].'?course='.$courseCode.'&an_id='.$postId;
 		preg_match_all('/(?!\b)(#\w+\b)/', $_POST['newContent'], $hashTags);
 
 		if (count($hashTags) > 0)

@@ -105,6 +105,7 @@ if ($is_editor) {
         $('input[name=group_submissions]').click(changeAssignLabel);
         $('input[id=assign_button_some]').click(ajaxAssignees);        
         $('input[id=assign_button_all]').click(hideAssignees);
+        $('input[name=auto_judge]').click(changeAutojudgeScenariosVisibility);
         function hideAssignees()
         {
             $('#assignees_tbl').hide();
@@ -149,8 +150,37 @@ if ($is_editor) {
                 $('#assign_box').find('option').remove().end().append(select_content);
             });
         }
+        function changeAutojudgeScenariosVisibility(){
+			if($(this).is(':checked')){
+				$(this).parent().find('table').show();
+			} else {
+				$(this).parent().find('table').hide();
+			}
+		}
+		// Add row
+		$('#autojudge_new_scenario').click(function(e){
+		 var rows = $(this).parent().parent().parent().find('tr').size()-1;
+		 //Clone the first line
+		 var newLine = $(this).parent().parent().parent().find('tr:first').clone();
+		 //Replace [0] with the line number
+		 newLine.html(newLine.html().replace(/auto_judge_scenarios\[0\]/g, 'auto_judge_scenarios['+rows+']'));
+		 //Initialize the remove event and show the button
+		 newLine.find('.autojudge_remove_scenario').show();
+		 newLine.find('.autojudge_remove_scenario').click(removeRow);
+		 //Insert it just before the final line
+		 newLine.insertBefore($(this).parent().parent().parent().find('tr:last'));
+		 e.preventDefault();
+		 return false;
+		});
+		//Remove row
+		function removeRow(e){
+			$(this).parent().parent().remove();
+			e.preventDefault();
+		 return false;
+		}
+		$('.autojudge_remove_scenario').click(removeRow);
+	
     });
-    
     </script>";    
 
     $email_notify = (isset($_POST['email']) && $_POST['email']);
@@ -326,16 +356,16 @@ function add_assignment() {
     $max_grade = filter_input(INPUT_POST, 'max_grade', FILTER_VALIDATE_FLOAT);
     $assign_to_specific = filter_input(INPUT_POST, 'assign_to_specific', FILTER_VALIDATE_INT);
     $assigned_to = filter_input(INPUT_POST, 'ingroup', FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
-    $secret = uniqid('');
-    
     $auto_judge = filter_input(INPUT_POST, 'auto_judge', FILTER_VALIDATE_INT);
+    $auto_judge_scenarios = serialize($_POST['auto_judge_scenarios']);
+    $secret = uniqid('');
 
     if ($assign_to_specific == 1 && empty($assigned_to)) {
         $assign_to_specific = 0;
     }
     if (@mkdir("$workPath/$secret", 0777) && @mkdir("$workPath/admin_files/$secret", 0777, true)) {       
-        $id = Database::get()->query("INSERT INTO assignment (course_id, title, description, deadline, late_submission, comments, submission_date, secret_directory, group_submissions, max_grade, assign_to_specific, auto_judge) "
-                . "VALUES (?d, ?s, ?s, ?t, ?d, ?s, ?t, ?s, ?d, ?d, ?d, ?d)", $course_id, $title, $desc, $deadline, $late_submission, '', date("Y-m-d H:i:s"), $secret, $group_submissions, $max_grade, $assign_to_specific, $auto_judge)->lastInsertID;
+        $id = Database::get()->query("INSERT INTO assignment (course_id, title, description, deadline, late_submission, comments, submission_date, secret_directory, group_submissions, max_grade, assign_to_specific, auto_judge, auto_judge_scenarios) "
+                . "VALUES (?d, ?s, ?s, ?t, ?d, ?s, ?t, ?s, ?d, ?d, ?d, ?d, ?s)", $course_id, $title, $desc, $deadline, $late_submission, '', date("Y-m-d H:i:s"), $secret, $group_submissions, $max_grade, $assign_to_specific, $auto_judge, $auto_judge_scenarios)->lastInsertID;
         $secret = work_secret($id);
         if ($id) {
             $local_name = uid_to_name($uid);
@@ -423,10 +453,11 @@ function submit_work($id, $on_behalf_of = null) {
         }
     } //checks for submission validity end here
     
-    $row = Database::get()->querySingle("SELECT title, group_submissions, auto_judge FROM assignment WHERE course_id = ?d AND id = ?d", $course_id, $id);
+    $row = Database::get()->querySingle("SELECT title, group_submissions, auto_judge, auto_judge_scenarios FROM assignment WHERE course_id = ?d AND id = ?d", $course_id, $id);
     $title = q($row->title);
     $group_sub = $row->group_submissions;
     $auto_judge = $row->auto_judge;
+	$auto_judge_scenarios = $auto_judge == true ? unserialize($row->auto_judge_scenarios) : null;
     $nav[] = $works_url;
     $nav[] = array('url' => "$_SERVER[SCRIPT_NAME]?id=$id", 'name' => $title);
 
@@ -619,7 +650,29 @@ function new_assignment() {
         
         <tr>
           <th>Auto-judge:</th>
-          <td><input type='checkbox' id='auto_judge' name='auto_judge' value='1' checked='1' /></td>
+          <td><input type='checkbox' id='auto_judge' name='auto_judge' value='1' checked='1' />
+          <table>
+			<thead>
+				<tr>
+					<th>Input</th>
+					<th>Expected Output</th>
+					<th>Delete</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><input type='text' name='auto_judge_scenarios[0][input]'  /></td>
+					<td><input type='text' name='auto_judge_scenarios[0][output]'  /></td>
+					<td><a href='#' class='autojudge_remove_scenario' style='display: none;'>X</a> </td>
+				</tr>
+				<tr>
+					<td></td>
+					<td></td>
+					<td><input type='submit' value='Νέο Σενάριο' id='autojudge_new_scenario'  /></td>
+				</tr>
+			</tbody>
+          </table>
+          </td>
 		</tr>
         
         <tr id='assignees_tbl' style='display:none;'>

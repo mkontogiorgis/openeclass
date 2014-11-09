@@ -530,6 +530,10 @@ function submit_work($id, $on_behalf_of = null) {
 		if($auto_judge) {
 			global $hackerEarthKey;
 			$content = file_get_contents("$workPath/$filename");
+			echo $ext;
+			// supported languages:			C, 	C++	, C++11, Clojure, C#	, Java, JavaScript, Haskell, Perl, PHP, Python, Ruby
+			// supported language strings:	C, 	CPP	, CPP11, CLOJURE, CSHARP, JAVA, JAVASCRIPT, HASKELL, PERL, PHP, PYTHON, RUBY
+			// supported file type strings:	c,  cpp , cpp	,clj	, cs	, java,	js		  ,	has/hs , pl	 , php, py	  , rb
 			//set POST variables
 			$url = 'http://api.hackerearth.com/code/run/';
 			$fields = array('client_secret' => $hackerEarthKey, 'source' => $content, 'lang' => 'PYTHON');
